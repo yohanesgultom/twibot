@@ -1,5 +1,8 @@
 .gradle/
 .idea/
 build/
+gradle/
 src/main/resources/twitter4j.properties
 *.log
+gradlew
+gradlew.bat
