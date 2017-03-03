@@ -1,17 +1,30 @@
 package id.yohanes.twibot;
 
-import static org.junit.Assert.*;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
+import twitter4j.Paging;
+import twitter4j.Status;
+import twitter4j.StatusUpdate;
+import twitter4j.User;
+
+import java.util.ArrayList;
+import java.util.Date;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 
 public class MainTest {
 
     private static Main main;
+    private static TwitterService twitterServiceMock;
 
     @BeforeClass
     public static void before() throws Exception {
-        main = new Main();
+        main = new Main(System.getProperty("user.dir"), "jdbc:h2:mem:test");
+        twitterServiceMock = mock(TwitterService.class);
+        main.setTwitter(twitterServiceMock);
     }
 
     @Test
@@ -62,4 +75,48 @@ public class MainTest {
 
     }
 
+    @Test
+    public void runTest() {
+        try {
+            long expectedLastId = 1L;
+            for (long i = 2L; i < 10L; i++) {
+                long lastId = main.getLastTweet();
+                assertEquals(expectedLastId, lastId);
+
+                // mock mentions
+                Paging paging = new Paging(lastId);
+                Status statusMock = mock(Status.class);
+                User userMock = mock(User.class);
+                when(userMock.getScreenName()).thenReturn("user");
+                when(statusMock.getId()).thenReturn(i);
+                when(statusMock.getText()).thenReturn("@bot hi");
+                when(statusMock.getUser()).thenReturn(userMock);
+                when(statusMock.getCreatedAt()).thenReturn(new Date());
+                ArrayList<Status> mentions = new ArrayList<>();
+                mentions.add(statusMock);
+                when(twitterServiceMock.getMentionsTimeline(paging)).thenReturn(mentions);
+
+                // mock updated status
+                String response = main.getResponse("hi");
+                StatusUpdate statusUpdate = new StatusUpdate(String.format("@%s %s", "user", response));
+                statusUpdate.setInReplyToStatusId(lastId);
+
+                Status updatedStatusMock = mock(Status.class);
+                User bot = mock(User.class);
+                when(bot.getScreenName()).thenReturn("bot");
+                when(updatedStatusMock.getId()).thenReturn(i + 1);
+                when(updatedStatusMock.getText()).thenReturn(statusUpdate.getStatus());
+                when(updatedStatusMock.getUser()).thenReturn(bot);
+                when(twitterServiceMock.updateStatus(statusUpdate)).thenReturn(updatedStatusMock);
+
+                // test run
+                main.run();
+                expectedLastId = i;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+
+    }
 }
