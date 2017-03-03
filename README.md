@@ -16,3 +16,6 @@ Follow these steps to activate the bot:
 * Rename `src/main/resources/twitter4j.properties.example` to `src/main/resources/twitter4j.properties`
 * Set all required Twitter keys and secrets in `src/main/resources/twitter4j.properties`
 * Run `gradle build` inside directory
+* Copy `build/distributions/twibot-1.0.zip` to your server
+* Extract zip
+* Create cron job to execute bot eg. `5 * * * * /some/path/twibot-1.0/bin/twibot` (unix) or create scheduler to run `Drive:\some\path\twibot-1.0\bin\twibot.bat` (windows) 
