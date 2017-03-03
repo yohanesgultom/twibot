@@ -1,6 +1,8 @@
 # Twibot
 
-Simple Twitter bot using ALICE AIML and Twitter4j. Mention to chat with demo bot: [@medi4sosial](https://twitter.com/medi4sosial)
+Simple Twitter bot using [ALICE AIML](http://www.alicebot.org/aiml/aaa/) and [Twitter4j](http://twitter4j.org). Mention to chat with demo bot: [@medi4sosial](https://twitter.com/medi4sosial)
+
+![demo](demo1.png)
 
 ## Build
 
