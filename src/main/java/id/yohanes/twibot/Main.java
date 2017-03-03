@@ -4,6 +4,7 @@ import org.alicebot.ab.Bot;
 import org.alicebot.ab.Chat;
 import org.apache.log4j.Logger;
 import twitter4j.Status;
+import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 
@@ -22,6 +23,7 @@ public class Main {
     private static final String MENTION_FORMAT = "@%s %s";
     private static final String TWIBOT_NAME = "alice2";
     private static final String TWIBOT_ACTION = "chat";
+    private static final int TWITTER_LIMIT = 140;
 
     private Connection dbConnection;
     private Twitter twitter;
@@ -110,6 +112,34 @@ public class Main {
         }
     }
 
+    public String[] splitTweet(String tweet, String username) {
+        int maxLimit = TWITTER_LIMIT - username.length() - "@ ".length();
+        ArrayList<String> tweets = new ArrayList<>();
+        if (tweet.length() <= maxLimit) {
+            tweets.add(tweet);
+        } else {
+            String[] tokens = tweet.split(" ");
+            String tmp = "";
+            for (String token:tokens) {
+                if (tmp.length() + token.length() < maxLimit) {
+                    tmp += tmp.isEmpty() ? token : " " + token;
+                } else if (token.length() == maxLimit) { // big token
+                    tweets.add(tmp);
+                    tmp = token;
+                } else if (token.length() > maxLimit) { // super token
+                    // just ignore as for now :D
+                } else {
+                    tweets.add(tmp);
+                    tmp = token;
+                }
+            }
+            if (!tmp.isEmpty()) {
+                tweets.add(tmp);
+            }
+        }
+        return tweets.toArray(new String[0]);
+    }
+
     public static void main(String[] args) {
         Main main = null;
         try {
@@ -127,10 +157,20 @@ public class Main {
                     logger.info(status.getId() + " " + status.getUser().getName() + ":" + status.getText());
                     try {
                         // replace all usernames
-                        String reply = main.getResponse(status.getText().replaceAll("(?i)@[\\w\\d]+ ", ""));
-                        logger.info("Reply: " + reply);
-                        Status replyStatus = main.getTwitter().updateStatus(String.format(MENTION_FORMAT, status.getUser().getScreenName(), reply));
-                        logger.info("Reply status: " + replyStatus);
+                        String response = main.getResponse(status.getText().replaceAll("(?i)@[\\w\\d]+ ", ""));
+                        logger.info("Reply: " + response);
+                        // split if longer than 140 characters
+                        String username = status.getUser().getScreenName();
+                        String[] tweets = main.splitTweet(response, username);
+                        for (String tweet:tweets) {
+                            // add mention @username
+                            StatusUpdate statusUpdate = new StatusUpdate(String.format(MENTION_FORMAT, username, tweet));
+                            // set reply to id
+                            statusUpdate.setInReplyToStatusId(status.getId());
+                            Status replyStatus = main.getTwitter().updateStatus(statusUpdate);
+                            logger.info("Reply status: " + replyStatus);
+                            Thread.sleep(1000);
+                        }
                     } catch (Exception e1) {
                         logger.warn(e1.getMessage());
                     }
