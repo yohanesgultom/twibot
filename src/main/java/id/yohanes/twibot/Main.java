@@ -26,8 +26,10 @@ public class Main {
     private Connection dbConnection;
     private Twitter twitter;
     private Bot bot;
+    private Chat chat;
 
     public Main() throws Exception {
+        // directory where java was run from
         this(System.getProperty("user.dir"));
     }
 
@@ -36,6 +38,7 @@ public class Main {
         this.dbConnection = DriverManager.getConnection(DB_CONNECTION, "sa", "");
         this.twitter = TwitterFactory.getSingleton();
         this.bot = loadBot(twibotHome);
+        this.chat = new Chat(this.bot, false);
     }
 
     public Twitter getTwitter() {
@@ -48,7 +51,6 @@ public class Main {
     }
 
     String getResponse(String request) {
-        Chat chat = new Chat(this.bot, false);
         String response = chat.multisentenceRespond(request);
         while (response.contains("&lt;")) response = response.replace("&lt;","<");
         while (response.contains("&gt;")) response = response.replace("&gt;",">");
@@ -108,8 +110,6 @@ public class Main {
         }
     }
 
-
-
     public static void main(String[] args) {
         Main main = null;
         try {
@@ -117,8 +117,10 @@ public class Main {
             main.createDbIfNotExist();
             long lastId = main.getLastTweet();
             logger.info("Last tweet id: " + lastId);
+            // get all mentions
             List<Status> statuses = main.getTwitter().getMentionsTimeline();
             List<Status> newTweets = new ArrayList<>();
+            // reply unreplied mentions
             for (Status status:statuses) {
                 if (status.getId() > lastId) {
                     newTweets.add(status);

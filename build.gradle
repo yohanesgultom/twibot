@@ -21,3 +21,19 @@ dependencies {
 }
 
 mainClassName = "id.yohanes.twibot.Main"
+
+test {
+    testLogging {
+        events 'standard_out'
+    }
+}
+
+distributions {
+    main {
+        contents {
+            from ('bots') {
+                into 'bots'
+            }
+        }
+    }
+}
