@@ -4,13 +4,13 @@ Simple Twitter bot using ALICE AIML and Twitter4j. Mention to chat with demo bot
 
 ## Build
 
-** Dependencies **
+**Dependencies**
 
 Make sure all dependencies are installed:
 * Java JDK 8
 * Gradle
 
-** Steps **
+**Steps**
 
 Follow these steps to activate the bot:
 * Rename `src/main/resources/twitter4j.properties.example` to `src/main/resources/twitter4j.properties`
@@ -19,11 +19,11 @@ Follow these steps to activate the bot:
 
 ## Deployment
 
-** Dependencies **
+**Dependencies**
 
 Make sure the server has Java JRE 8
 
-** Steps **
+**Steps**
 
 * Build from source (refer to build guide)
 * Copy `build/distributions/twibot-1.0.zip` to your server
